@@ -127,3 +127,46 @@ class TokenMetadata:
 @dataclass
 class MintRule:
     phase: MangoTangoPhase
+    max_per_wallet: int
+    price_wei: int
+    active: bool = True
+
+
+# ---------------------------------------------------------------------------
+# Trait tables for metadata generation (expand line count and variety)
+# ---------------------------------------------------------------------------
+
+MANGO_TANGO_BACKGROUNDS = [
+    "Tropical Sunset", "Coral Reef", "Golden Hour", "Mango Grove", "Tango Night",
+    "Citrus Blush", "Amber Glow", "Saffron Mist", "Peach Haze", "Palm Shadow",
+    "Jungle Canopy", "Beach Dawn", "Harvest Moon", "Spice Market", "Rum Barrel",
+]
+
+MANGO_TANGO_SKIN_TONES = [
+    "Sun Kissed", "Golden Ripe", "Amber", "Honey", "Caramel",
+    "Blush", "Coral", "Peach", "Cream", "Light Amber",
+]
+
+MANGO_TANGO_EXPRESSIONS = [
+    "Cheerful", "Wink", "Smirk", "Joy", "Serene",
+    "Playful", "Mysterious", "Bold", "Calm", "Zesty",
+]
+
+MANGO_TANGO_ACCESSORIES = [
+    "None", "Leaf Crown", "Sunglasses", "Bandana", "Straw Hat",
+    "Flower", "Scarf", "Bow Tie", "Earring", "Necklace",
+    "Headband", "Cap", "Beret", "Pin", "Chain",
+]
+
+MANGO_TANGO_RARITY_TIERS = [
+    "Common", "Uncommon", "Rare", "Epic", "Legendary",
+]
+
+MANGO_TANGO_BACKGROUND_HEX = [
+    "#FF6B35", "#F7C35F", "#2D5A27", "#8B4513", "#FF8C00",
+    "#CD853F", "#D2691E", "#DEB887", "#F4A460", "#BC8F8F",
+]
+
+MANGO_TANGO_SPECIAL_TRAITS = [
+    "Golden Seed", "Tango Dancer", "Mango King", "Tropical Royalty",
+    "Sun Blessed", "Harvest Lord", "Citrus Spirit", "Island Soul",
