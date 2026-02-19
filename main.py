@@ -299,3 +299,46 @@ class MangoTangoMinter:
         return len(self._allowlist)
 
     def _emit(self, event: MangoTangoEvent, data: Dict[str, Any]) -> None:
+        self._event_log.append((event, data))
+
+    def can_mint(self, address: str, quantity: int, value_wei: int) -> Tuple[bool, Optional[str]]:
+        if self._phase == MangoTangoPhase.CLOSED:
+            return False, "MangoTango: minting closed"
+        if self._phase == MangoTangoPhase.SOLD_OUT:
+            return False, "MangoTango: sold out"
+        if self._total_minted + quantity > MANGO_TANGO_MAX_SUPPLY:
+            return False, "MangoTango: would exceed max supply"
+        required = self.get_mint_price_wei() * quantity
+        if value_wei < required:
+            return False, "MangoTango: insufficient value"
+        current = self._mint_count_per_wallet.get(address.strip().lower(), 0)
+        limit = self.get_max_per_wallet()
+        if self._phase == MangoTangoPhase.ALLOWLIST and not self.is_on_allowlist(address):
+            return False, "MangoTango: not on allowlist"
+        if current + quantity > limit:
+            return False, "MangoTango: wallet limit exceeded"
+        return True, None
+
+    def mint(self, to_address: str, quantity: int, value_wei: int) -> List[int]:
+        ok, err = self.can_mint(to_address, quantity, value_wei)
+        if not ok:
+            raise MangoTangoMintCapReachedError(self._total_minted, MANGO_TANGO_MAX_SUPPLY) if "exceed" in (err or "") else MangoTangoWalletLimitError(to_address, self._mint_count_per_wallet.get(to_address.lower(), 0), self.get_max_per_wallet())
+        required = self.get_mint_price_wei() * quantity
+        if value_wei < required:
+            raise MangoTangoInsufficientValueError(value_wei, required)
+        if self._phase == MangoTangoPhase.ALLOWLIST and not self.is_on_allowlist(to_address):
+            raise MangoTangoNotAllowedError(to_address)
+
+        key = to_address.strip().lower()
+        current = self._mint_count_per_wallet.get(key, 0)
+        limit = self.get_max_per_wallet()
+        if current + quantity > limit:
+            raise MangoTangoWalletLimitError(to_address, current, limit)
+
+        minted_ids: List[int] = []
+        for _ in range(quantity):
+            if self._total_minted >= MANGO_TANGO_MAX_SUPPLY:
+                break
+            tid = self._next_token_id
+            self._next_token_id += 1
+            self._total_minted += 1
