@@ -84,3 +84,46 @@ class MangoTangoInsufficientValueError(Exception):
     def __init__(self, sent: int, required: int) -> None:
         super().__init__(f"MangoTango: insufficient value (sent={sent}, required={required})")
 
+
+class MangoTangoRevealNotReadyError(Exception):
+    def __init__(self, token_id: int) -> None:
+        super().__init__(f"MangoTango: reveal not ready for token {token_id}")
+
+
+# ---------------------------------------------------------------------------
+# Data structures
+# ---------------------------------------------------------------------------
+
+@dataclass
+class RoyaltyInfo:
+    recipient: str
+    bps: int
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"recipient": self.recipient, "bps": self.bps}
+
+
+@dataclass
+class TokenMetadata:
+    token_id: int
+    name: str
+    description: str
+    image_uri: str
+    attributes: List[Dict[str, Any]]
+    revealed: bool
+    revealed_at: Optional[float] = None
+
+    def to_json(self) -> str:
+        return json.dumps({
+            "token_id": self.token_id,
+            "name": self.name,
+            "description": self.description,
+            "image": self.image_uri,
+            "attributes": self.attributes,
+            "revealed": self.revealed,
+        }, indent=2)
+
+
+@dataclass
+class MintRule:
+    phase: MangoTangoPhase
