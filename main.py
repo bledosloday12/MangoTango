@@ -256,3 +256,46 @@ class MangoTangoMinter:
 
     def get_reveal_oracle(self) -> str:
         return self._reveal_oracle
+
+    def get_phase(self) -> MangoTangoPhase:
+        return self._phase
+
+    def get_total_supply(self) -> int:
+        return self._total_minted
+
+    def get_next_token_id(self) -> int:
+        return self._next_token_id
+
+    def get_max_supply(self) -> int:
+        return MANGO_TANGO_MAX_SUPPLY
+
+    def get_mint_price_wei(self) -> int:
+        if self._phase == MangoTangoPhase.ALLOWLIST:
+            return MANGO_TANGO_MINT_PRICE_WEI
+        if self._phase == MangoTangoPhase.PUBLIC:
+            return MANGO_TANGO_MINT_PRICE_WEI
+        return MANGO_TANGO_MINT_PRICE_WEI
+
+    def get_max_per_wallet(self) -> int:
+        if self._phase == MangoTangoPhase.ALLOWLIST:
+            return MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET
+        if self._phase == MangoTangoPhase.PUBLIC:
+            return MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET
+        return 0
+
+    def add_to_allowlist(self, addresses: List[str]) -> None:
+        for a in addresses:
+            self._allowlist.add(a.strip().lower())
+        self._emit(MangoTangoEvent.ALLOWLIST_UPDATED, {"count": len(addresses)})
+
+    def remove_from_allowlist(self, address: str) -> None:
+        self._allowlist.discard(address.strip().lower())
+        self._emit(MangoTangoEvent.ALLOWLIST_UPDATED, {"removed": address})
+
+    def is_on_allowlist(self, address: str) -> bool:
+        return address.strip().lower() in self._allowlist
+
+    def get_allowlist_size(self) -> int:
+        return len(self._allowlist)
+
+    def _emit(self, event: MangoTangoEvent, data: Dict[str, Any]) -> None:
