@@ -213,3 +213,46 @@ def build_token_metadata(token_id: int, revealed: bool) -> TokenMetadata:
     return TokenMetadata(
         token_id=token_id,
         name=name,
+        description=desc,
+        image_uri=image_uri,
+        attributes=attrs,
+        revealed=revealed,
+        revealed_at=time.time() if revealed else None,
+    )
+
+
+# ---------------------------------------------------------------------------
+# MangoTango Minter (core contract logic)
+# ---------------------------------------------------------------------------
+
+class MangoTangoMinter:
+    def __init__(self) -> None:
+        self._next_token_id = 1
+        self._total_minted = 0
+        self._allowlist: Set[str] = set()
+        self._mint_count_per_wallet: Dict[str, int] = {}
+        self._phase = MangoTangoPhase.ALLOWLIST
+        self._metadata_store: Dict[int, TokenMetadata] = {}
+        self._owner_of: Dict[int, str] = {}
+        self._reveal_ready_at: Dict[int, float] = {}
+        self._event_log: List[Tuple[MangoTangoEvent, Dict[str, Any]]] = []
+        self._royalty_info = RoyaltyInfo(recipient=ROYALTY_RECIPIENT_ADDRESS, bps=MANGO_TANGO_ROYALTY_BPS)
+        self._minter_address = MINTER_ADDRESS
+        self._treasury_address = TREASURY_ADDRESS
+        self._collection_owner = COLLECTION_OWNER_ADDRESS
+        self._reveal_oracle = REVEAL_ORACLE_ADDRESS
+
+    def get_minter_address(self) -> str:
+        return self._minter_address
+
+    def get_treasury_address(self) -> str:
+        return self._treasury_address
+
+    def get_royalty_recipient(self) -> str:
+        return self._royalty_info.recipient
+
+    def get_collection_owner(self) -> str:
+        return self._collection_owner
+
+    def get_reveal_oracle(self) -> str:
+        return self._reveal_oracle
