@@ -170,3 +170,46 @@ MANGO_TANGO_BACKGROUND_HEX = [
 MANGO_TANGO_SPECIAL_TRAITS = [
     "Golden Seed", "Tango Dancer", "Mango King", "Tropical Royalty",
     "Sun Blessed", "Harvest Lord", "Citrus Spirit", "Island Soul",
+]
+
+
+def _hash_seed_for_token(collection_seed: str, token_id: int, nonce: int = 0) -> str:
+    payload = f"{collection_seed}-{token_id}-{nonce}"
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def _pick_trait_from_hash(h: str, traits: List[str]) -> str:
+    idx = int(h[:8], 16) % len(traits)
+    return traits[idx]
+
+
+def _pick_hex_from_hash(h: str, hexes: List[str]) -> str:
+    idx = int(h[8:16], 16) % len(hexes)
+    return hexes[idx]
+
+
+def generate_metadata_attributes(token_id: int, revealed: bool) -> List[Dict[str, Any]]:
+    seed = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    attrs = []
+    attrs.append({"trait_type": "Background", "value": _pick_trait_from_hash(seed[0:16], MANGO_TANGO_BACKGROUNDS)})
+    attrs.append({"trait_type": "Skin", "value": _pick_trait_from_hash(seed[2:18], MANGO_TANGO_SKIN_TONES)})
+    attrs.append({"trait_type": "Expression", "value": _pick_trait_from_hash(seed[4:20], MANGO_TANGO_EXPRESSIONS)})
+    attrs.append({"trait_type": "Accessory", "value": _pick_trait_from_hash(seed[6:22], MANGO_TANGO_ACCESSORIES)})
+    attrs.append({"trait_type": "Rarity", "value": _pick_trait_from_hash(seed[10:26], MANGO_TANGO_RARITY_TIERS)})
+    attrs.append({"trait_type": "Background Color", "value": _pick_hex_from_hash(seed[12:28], MANGO_TANGO_BACKGROUND_HEX)})
+    if int(seed[14:16], 16) % 5 == 0:
+        attrs.append({"trait_type": "Special", "value": _pick_trait_from_hash(seed[16:32], MANGO_TANGO_SPECIAL_TRAITS)})
+    return attrs
+
+
+def build_token_metadata(token_id: int, revealed: bool) -> TokenMetadata:
+    attrs = generate_metadata_attributes(token_id, revealed)
+    name = f"{MANGO_TANGO_NAME} #{token_id}"
+    desc = f"A unique MangoTango collectible. Token ID {token_id}. Part of the {MANGO_TANGO_NAME} collection."
+    if revealed:
+        image_uri = f"{MANGO_TANGO_COLLECTION_URI}{token_id}.png"
+    else:
+        image_uri = f"{MANGO_TANGO_COLLECTION_URI}unrevealed.png"
+    return TokenMetadata(
+        token_id=token_id,
+        name=name,
