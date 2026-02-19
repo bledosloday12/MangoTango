@@ -385,3 +385,46 @@ class MangoTangoMinter:
 
     def tokens_of_owner(self, address: str) -> List[int]:
         key = address.strip().lower()
+        return [tid for tid, owner in self._owner_of.items() if owner.strip().lower() == key]
+
+    def advance_to_public(self) -> None:
+        self._phase = MangoTangoPhase.PUBLIC
+        self._emit(MangoTangoEvent.PHASE_ADVANCED, {"phase": "PUBLIC"})
+
+    def get_royalty_info(self) -> RoyaltyInfo:
+        return self._royalty_info
+
+    def get_event_log(self) -> List[Tuple[MangoTangoEvent, Dict[str, Any]]]:
+        return list(self._event_log)
+
+    def collection_fingerprint(self) -> str:
+        return hashlib.sha256(
+            f"{MANGO_TANGO_COLLECTION_SEED}-{self._total_minted}-{self._next_token_id}-{MANGO_TANGO_DEPLOY_SALT}".encode()
+        ).hexdigest()[:32]
+
+
+# ---------------------------------------------------------------------------
+# Additional trait and metadata helpers (expand line count)
+# ---------------------------------------------------------------------------
+
+MANGO_TANGO_LAYERS = [
+    "background", "skin", "expression", "accessory", "overlay",
+]
+
+MANGO_TANGO_ANIMATION_STYLES = [
+    "Static", "Idle", "Bounce", "Pulse", "Shake",
+]
+
+MANGO_TANGO_SEASONS = [
+    "Tropical Summer", "Harvest Fall", "Golden Winter", "Blossom Spring",
+]
+
+MANGO_TANGO_EDITION_NAMES = [
+    "First Harvest", "Golden Batch", "Tango Reserve", "Mango Prime",
+]
+
+
+def get_trait_rarity_weights() -> Dict[str, List[float]]:
+    return {
+        "Background": [0.25, 0.20, 0.18, 0.15, 0.12, 0.10],
+        "Skin": [0.22, 0.20, 0.18, 0.16, 0.14, 0.10],
