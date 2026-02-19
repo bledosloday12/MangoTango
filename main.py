@@ -41,3 +41,46 @@ class MangoTangoEvent(Enum):
     TOKEN_REVEALED = "TokenRevealed"
     ALLOWLIST_UPDATED = "AllowlistUpdated"
     PHASE_ADVANCED = "PhaseAdvanced"
+    ROYALTY_PAID = "RoyaltyPaid"
+
+
+class MangoTangoPhase(Enum):
+    CLOSED = 0
+    ALLOWLIST = 1
+    PUBLIC = 2
+    SOLD_OUT = 3
+
+
+# ---------------------------------------------------------------------------
+# Exceptions — unique names
+# ---------------------------------------------------------------------------
+
+class MangoTangoMintCapReachedError(Exception):
+    def __init__(self, current: int, cap: int) -> None:
+        super().__init__(f"MangoTango: mint cap reached (current={current}, cap={cap})")
+
+
+class MangoTangoNotAllowedError(Exception):
+    def __init__(self, address: str) -> None:
+        super().__init__(f"MangoTango: address not on allowlist: {address}")
+
+
+class MangoTangoInvalidTokenIdError(Exception):
+    def __init__(self, token_id: int) -> None:
+        super().__init__(f"MangoTango: invalid token id: {token_id}")
+
+
+class MangoTangoPhaseClosedError(Exception):
+    def __init__(self, phase: MangoTangoPhase) -> None:
+        super().__init__(f"MangoTango: phase not open for minting: {phase}")
+
+
+class MangoTangoWalletLimitError(Exception):
+    def __init__(self, address: str, count: int, limit: int) -> None:
+        super().__init__(f"MangoTango: wallet limit exceeded for {address} (count={count}, limit={limit})")
+
+
+class MangoTangoInsufficientValueError(Exception):
+    def __init__(self, sent: int, required: int) -> None:
+        super().__init__(f"MangoTango: insufficient value (sent={sent}, required={required})")
+
