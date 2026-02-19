@@ -342,3 +342,46 @@ class MangoTangoMinter:
             tid = self._next_token_id
             self._next_token_id += 1
             self._total_minted += 1
+            self._owner_of[tid] = to_address
+            self._reveal_ready_at[tid] = time.time() + MANGO_TANGO_REVEAL_DELAY_SEC
+            meta = build_token_metadata(tid, revealed=False)
+            self._metadata_store[tid] = meta
+            minted_ids.append(tid)
+            self._emit(MangoTangoEvent.MINT_REQUESTED, {"tokenId": tid, "to": to_address, "valueWei": self.get_mint_price_wei()})
+
+        self._mint_count_per_wallet[key] = self._mint_count_per_wallet.get(key, 0) + len(minted_ids)
+        if self._total_minted >= MANGO_TANGO_MAX_SUPPLY:
+            self._phase = MangoTangoPhase.SOLD_OUT
+            self._emit(MangoTangoEvent.PHASE_ADVANCED, {"phase": "SOLD_OUT"})
+        return minted_ids
+
+    def owner_of(self, token_id: int) -> str:
+        if token_id not in self._owner_of:
+            raise MangoTangoInvalidTokenIdError(token_id)
+        return self._owner_of[token_id]
+
+    def get_metadata(self, token_id: int) -> TokenMetadata:
+        if token_id not in self._metadata_store:
+            raise MangoTangoInvalidTokenIdError(token_id)
+        return self._metadata_store[token_id]
+
+    def reveal(self, token_id: int) -> TokenMetadata:
+        if token_id not in self._metadata_store:
+            raise MangoTangoInvalidTokenIdError(token_id)
+        if time.time() < self._reveal_ready_at.get(token_id, 0):
+            raise MangoTangoRevealNotReadyError(token_id)
+        meta = build_token_metadata(token_id, revealed=True)
+        self._metadata_store[token_id] = meta
+        self._emit(MangoTangoEvent.TOKEN_REVEALED, {"tokenId": token_id})
+        return meta
+
+    def balance_of(self, address: str) -> int:
+        count = 0
+        key = address.strip().lower()
+        for owner in self._owner_of.values():
+            if owner.strip().lower() == key:
+                count += 1
+        return count
+
+    def tokens_of_owner(self, address: str) -> List[int]:
+        key = address.strip().lower()
