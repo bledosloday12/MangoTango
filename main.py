@@ -858,3 +858,46 @@ def build_full_extended_metadata(token_id: int) -> Dict[str, Any]:
 def collection_info() -> Dict[str, Any]:
     return {
         "name": MANGO_TANGO_NAME,
+        "symbol": MANGO_TANGO_SYMBOL,
+        "collectionSeed": MANGO_TANGO_COLLECTION_SEED,
+        "maxSupply": MANGO_TANGO_MAX_SUPPLY,
+        "mintPriceWei": MANGO_TANGO_MINT_PRICE_WEI,
+        "royaltyBps": MANGO_TANGO_ROYALTY_BPS,
+        "minterAddress": MINTER_ADDRESS,
+        "treasuryAddress": TREASURY_ADDRESS,
+        "royaltyRecipient": ROYALTY_RECIPIENT_ADDRESS,
+        "collectionOwner": COLLECTION_OWNER_ADDRESS,
+        "revealOracle": REVEAL_ORACLE_ADDRESS,
+        "baseUri": MANGO_TANGO_COLLECTION_URI,
+    }
+
+
+def phase_info(phase: MangoTangoPhase) -> Dict[str, Any]:
+    return {
+        "phase": phase.name,
+        "maxPerWallet": MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET if phase == MangoTangoPhase.ALLOWLIST else (MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET if phase == MangoTangoPhase.PUBLIC else 0),
+        "mintPriceWei": MANGO_TANGO_MINT_PRICE_WEI,
+        "open": phase in (MangoTangoPhase.ALLOWLIST, MangoTangoPhase.PUBLIC),
+    }
+
+
+def wallet_mint_allowance(minter: MangoTangoMinter, address: str) -> Dict[str, Any]:
+    key = address.strip().lower()
+    current = minter._mint_count_per_wallet.get(key, 0)
+    limit = minter.get_max_per_wallet()
+    return {
+        "address": address,
+        "mintedSoFar": current,
+        "limit": limit,
+        "remaining": max(0, limit - current),
+        "onAllowlist": minter.is_on_allowlist(address) if minter.get_phase() == MangoTangoPhase.ALLOWLIST else True,
+    }
+
+
+def minter_config_export() -> Dict[str, Any]:
+    return {
+        "MANGO_TANGO_COLLECTION_SEED": MANGO_TANGO_COLLECTION_SEED,
+        "MANGO_TANGO_MAX_SUPPLY": MANGO_TANGO_MAX_SUPPLY,
+        "MANGO_TANGO_MINT_PRICE_WEI": MANGO_TANGO_MINT_PRICE_WEI,
+        "MANGO_TANGO_ROYALTY_BPS": MANGO_TANGO_ROYALTY_BPS,
+        "MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET": MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET,
