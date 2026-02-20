@@ -987,3 +987,46 @@ def address_checksum(addr: str) -> str:
 def verify_collection_fingerprint(minter: MangoTangoMinter, expected_prefix: str) -> bool:
     fp = minter.collection_fingerprint()
     return fp.startswith(expected_prefix) or expected_prefix in fp
+
+
+# ---------------------------------------------------------------------------
+# Stub hooks for future EVM integration
+# ---------------------------------------------------------------------------
+
+def encode_mint_calldata(to: str, quantity: int) -> Dict[str, Any]:
+    return {"to": to, "quantity": quantity, "valueWei": MANGO_TANGO_MINT_PRICE_WEI * quantity}
+
+
+def encode_reveal_calldata(token_id: int) -> Dict[str, Any]:
+    return {"tokenId": token_id}
+
+
+def decode_mint_result(result: Dict[str, Any]) -> List[int]:
+    return result.get("tokenIds", [])
+
+
+# ---------------------------------------------------------------------------
+# Metadata JSON schema and validation
+# ---------------------------------------------------------------------------
+
+MANGO_TANGO_METADATA_SCHEMA_KEYS = ["name", "description", "image", "attributes", "external_url"]
+
+
+def validate_metadata_dict(d: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
+    for k in MANGO_TANGO_METADATA_SCHEMA_KEYS[:4]:
+        if k not in d:
+            return False, f"Missing key: {k}"
+    if not isinstance(d.get("attributes"), list):
+        return False, "attributes must be list"
+    return True, None
+
+
+def metadata_to_erc721_format(d: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "name": d.get("name", ""),
+        "description": d.get("description", ""),
+        "image": d.get("image", ""),
+        "attributes": d.get("attributes", []),
+        "external_url": d.get("external_url", ""),
+    }
+
