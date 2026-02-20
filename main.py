@@ -557,3 +557,46 @@ class MetadataBuilder:
         return meta.to_json()
 
     @staticmethod
+    def open_sea_format(token_id: int, revealed: bool) -> Dict[str, Any]:
+        meta = build_token_metadata(token_id, revealed)
+        return {
+            "name": meta.name,
+            "description": meta.description,
+            "image": meta.image_uri,
+            "attributes": meta.attributes,
+            "external_url": token_uri_path(token_id),
+        }
+
+    @staticmethod
+    def rarity_score(attributes: List[Dict[str, Any]]) -> float:
+        weights = get_trait_rarity_weights()
+        score = 0.0
+        for attr in attributes:
+            trait_type = attr.get("trait_type", "")
+            if trait_type in weights:
+                vals = weights[trait_type]
+                idx = min(len(vals) - 1, hash(attr.get("value", "")) % len(vals))
+                score += vals[idx]
+        return score
+
+
+# ---------------------------------------------------------------------------
+# Extra trait pools for metadata variety
+# ---------------------------------------------------------------------------
+
+MANGO_TANGO_HAT_STYLES = [
+    "None", "Crown", "Sombrero", "Fedora", "Beanie", "Cap", "Straw", "Top Hat",
+]
+
+MANGO_TANGO_EYE_STYLES = [
+    "Default", "Wink", "Closed", "Star", "Heart", "Sparkle", "Serious", "Happy",
+]
+
+MANGO_TANGO_MOUTH_STYLES = [
+    "Smile", "Grin", "Neutral", "Open", "Tongue", "Whistle", "Smirk",
+]
+
+MANGO_TANGO_BACKGROUND_EFFECTS = [
+    "None", "Bokeh", "Gradient", "Pattern", "Stars", "Leaves", "Waves",
+]
+
