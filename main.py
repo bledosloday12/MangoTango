@@ -944,3 +944,46 @@ def format_price_ether(wei: int) -> str:
 def royalty_per_sale_ether(sale_ether: float) -> float:
     wei = int(sale_ether * 1e18)
     return compute_royalty_amount(wei, MANGO_TANGO_ROYALTY_BPS) / 1e18
+
+
+def total_mint_cost_ether(quantity: int) -> float:
+    return (MANGO_TANGO_MINT_PRICE_WEI * quantity) / 1e18
+
+
+# ---------------------------------------------------------------------------
+# Event filter helpers
+# ---------------------------------------------------------------------------
+
+def filter_events_by_type(minter: MangoTangoMinter, event_type: MangoTangoEvent) -> List[Dict[str, Any]]:
+    return [data for ev, data in minter.get_event_log() if ev == event_type]
+
+
+def filter_mint_events(minter: MangoTangoMinter) -> List[Dict[str, Any]]:
+    return filter_events_by_type(minter, MangoTangoEvent.MINT_REQUESTED)
+
+
+def filter_reveal_events(minter: MangoTangoMinter) -> List[Dict[str, Any]]:
+    return filter_events_by_type(minter, MangoTangoEvent.TOKEN_REVEALED)
+
+
+# ---------------------------------------------------------------------------
+# Checksum and verification (EVM-style)
+# ---------------------------------------------------------------------------
+
+def address_checksum(addr: str) -> str:
+    s = addr.strip().lower()
+    if len(s) != 42 or not s.startswith("0x"):
+        return addr
+    h = hashlib.sha256(s.encode()).hexdigest()
+    out = "0x"
+    for i, c in enumerate(s[2:]):
+        if int(h[i], 16) >= 8:
+            out += c.upper()
+        else:
+            out += c
+    return out
+
+
+def verify_collection_fingerprint(minter: MangoTangoMinter, expected_prefix: str) -> bool:
+    fp = minter.collection_fingerprint()
+    return fp.startswith(expected_prefix) or expected_prefix in fp
