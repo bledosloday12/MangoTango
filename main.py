@@ -729,3 +729,46 @@ def abi_like_mint(minter: MangoTangoMinter, to: str, quantity: int, value_wei: i
     except Exception as e:
         return {"success": False, "tokenIds": [], "error": str(e)}
 
+
+def abi_like_balance_of(minter: MangoTangoMinter, address: str) -> int:
+    return minter.balance_of(address)
+
+
+def abi_like_owner_of(minter: MangoTangoMinter, token_id: int) -> Optional[str]:
+    try:
+        return minter.owner_of(token_id)
+    except MangoTangoInvalidTokenIdError:
+        return None
+
+
+def abi_like_token_uri(minter: MangoTangoMinter, token_id: int) -> Optional[str]:
+    try:
+        meta = minter.get_metadata(token_id)
+        return json.dumps({
+            "name": meta.name,
+            "description": meta.description,
+            "image": meta.image_uri,
+            "attributes": meta.attributes,
+        })
+    except MangoTangoInvalidTokenIdError:
+        return None
+
+
+def abi_like_total_supply(minter: MangoTangoMinter) -> int:
+    return minter.get_total_supply()
+
+
+def abi_like_royalty_info(minter: MangoTangoMinter) -> Dict[str, Any]:
+    r = minter.get_royalty_info()
+    return {"recipient": r.recipient, "bps": r.bps}
+
+
+# ---------------------------------------------------------------------------
+# Additional trait and metadata pools (expand line count)
+# ---------------------------------------------------------------------------
+
+MANGO_TANGO_WEATHER_TRAITS = [
+    "Sunny", "Cloudy", "Rain", "Tropical Storm", "Clear Night", "Dusk", "Dawn",
+]
+
+MANGO_TANGO_FRUIT_ACCENTS = [
