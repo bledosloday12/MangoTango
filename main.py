@@ -772,3 +772,46 @@ MANGO_TANGO_WEATHER_TRAITS = [
 ]
 
 MANGO_TANGO_FRUIT_ACCENTS = [
+    "Mango", "Papaya", "Pineapple", "Coconut", "Lime", "Passion", "Guava", "Banana",
+]
+
+MANGO_TANGO_DANCE_STYLES = [
+    "Tango", "Salsa", "Samba", "Cha-Cha", "Rumba", "Merengue", "Cumbia", "Flamenco",
+]
+
+MANGO_TANGO_MUSIC_GENRES = [
+    "Latin", "Tropical", "Reggae", "Calypso", "Bossa", "Jazz", "Folk", "Fusion",
+]
+
+MANGO_TANGO_ISLAND_NAMES = [
+    "Tropical Isle", "Mango Bay", "Tango Coast", "Golden Shore", "Citrus Haven",
+]
+
+MANGO_TANGO_PALETTE_NAMES = [
+    "Sunset", "Ocean", "Forest", "Desert", "Tropical", "Vintage", "Neon", "Pastel",
+]
+
+MANGO_TANGO_FRAME_COUNT_OPTIONS = [1, 3, 5, 7, 12, 24]
+
+MANGO_TANGO_AUDIO_URIS = [
+    "ipfs://QmAudio1/", "ipfs://QmAudio2/", "ipfs://QmAudio3/", "ipfs://QmAudio4/",
+]
+
+MANGO_TANGO_VIDEO_URIS = [
+    "ipfs://QmVideo1/", "ipfs://QmVideo2/",
+]
+
+MANGO_TANGO_GLB_URIS = [
+    "ipfs://QmGlb1/", "ipfs://QmGlb2/", "ipfs://QmGlb3/",
+]
+
+
+def get_weather_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[32:48], MANGO_TANGO_WEATHER_TRAITS)
+
+
+def get_fruit_accent_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[34:50], MANGO_TANGO_FRUIT_ACCENTS)
+
