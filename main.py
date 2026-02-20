@@ -1030,3 +1030,46 @@ def metadata_to_erc721_format(d: Dict[str, Any]) -> Dict[str, Any]:
         "external_url": d.get("external_url", ""),
     }
 
+
+# ---------------------------------------------------------------------------
+# Supply tier constants (for future tiered mint)
+# ---------------------------------------------------------------------------
+
+MANGO_TANGO_TIER_1_END = 3333
+MANGO_TANGO_TIER_2_END = 6666
+MANGO_TANGO_TIER_3_END = 9999
+
+
+def tier_for_token_id(token_id: int) -> int:
+    if token_id <= MANGO_TANGO_TIER_1_END:
+        return 1
+    if token_id <= MANGO_TANGO_TIER_2_END:
+        return 2
+    if token_id <= MANGO_TANGO_TIER_3_END:
+        return 3
+    return 0
+
+
+def tier_name(tier: int) -> str:
+    return {1: "Tier1", 2: "Tier2", 3: "Tier3"}.get(tier, "Unknown")
+
+
+def tokens_by_tier(minter: MangoTangoMinter, tier: int) -> List[int]:
+    start = 1 if tier == 1 else (MANGO_TANGO_TIER_1_END + 1 if tier == 2 else MANGO_TANGO_TIER_2_END + 1)
+    end = MANGO_TANGO_TIER_1_END if tier == 1 else (MANGO_TANGO_TIER_2_END if tier == 2 else MANGO_TANGO_TIER_3_END)
+    return [tid for tid in minter._owner_of.keys() if start <= tid <= end]
+
+
+# ---------------------------------------------------------------------------
+# Constants export for external tooling
+# ---------------------------------------------------------------------------
+
+def get_all_constants() -> Dict[str, Any]:
+    return {
+        "MANGO_TANGO_COLLECTION_SEED": MANGO_TANGO_COLLECTION_SEED,
+        "MANGO_TANGO_MAX_SUPPLY": MANGO_TANGO_MAX_SUPPLY,
+        "MANGO_TANGO_MINT_PRICE_WEI": MANGO_TANGO_MINT_PRICE_WEI,
+        "MANGO_TANGO_ROYALTY_BPS": MANGO_TANGO_ROYALTY_BPS,
+        "MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET": MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET,
+        "MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET": MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET,
+        "MANGO_TANGO_REVEAL_DELAY_SEC": MANGO_TANGO_REVEAL_DELAY_SEC,
