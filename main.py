@@ -428,3 +428,46 @@ def get_trait_rarity_weights() -> Dict[str, List[float]]:
     return {
         "Background": [0.25, 0.20, 0.18, 0.15, 0.12, 0.10],
         "Skin": [0.22, 0.20, 0.18, 0.16, 0.14, 0.10],
+        "Expression": [0.20, 0.20, 0.20, 0.20, 0.20],
+        "Accessory": [0.30, 0.15, 0.12, 0.10, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03],
+    }
+
+
+def compute_royalty_amount(sale_price_wei: int, bps: int) -> int:
+    return (sale_price_wei * bps) // MANGO_TANGO_BPS_DENOM
+
+
+def validate_eth_address(addr: str) -> bool:
+    if not addr or len(addr) != 42:
+        return False
+    if addr[:2] != "0x":
+        return False
+    try:
+        int(addr[2:], 16)
+        return True
+    except ValueError:
+        return False
+
+
+def token_uri_path(token_id: int) -> str:
+    return f"{MANGO_TANGO_COLLECTION_URI}{token_id}"
+
+
+def contract_uri() -> str:
+    return f"{MANGO_TANGO_COLLECTION_URI}collection"
+
+
+# ---------------------------------------------------------------------------
+# Batch and view helpers
+# ---------------------------------------------------------------------------
+
+def batch_metadata(minter: MangoTangoMinter, token_ids: List[int]) -> List[TokenMetadata]:
+    result = []
+    for tid in token_ids:
+        try:
+            result.append(minter.get_metadata(tid))
+        except MangoTangoInvalidTokenIdError:
+            pass
+    return result
+
+
