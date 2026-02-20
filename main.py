@@ -901,3 +901,46 @@ def minter_config_export() -> Dict[str, Any]:
         "MANGO_TANGO_MINT_PRICE_WEI": MANGO_TANGO_MINT_PRICE_WEI,
         "MANGO_TANGO_ROYALTY_BPS": MANGO_TANGO_ROYALTY_BPS,
         "MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET": MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET,
+        "MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET": MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET,
+        "MINTER_ADDRESS": MINTER_ADDRESS,
+        "TREASURY_ADDRESS": TREASURY_ADDRESS,
+        "ROYALTY_RECIPIENT_ADDRESS": ROYALTY_RECIPIENT_ADDRESS,
+        "COLLECTION_OWNER_ADDRESS": COLLECTION_OWNER_ADDRESS,
+        "REVEAL_ORACLE_ADDRESS": REVEAL_ORACLE_ADDRESS,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Token ID range and batch utilities
+# ---------------------------------------------------------------------------
+
+def token_ids_in_range(start: int, end: int) -> List[int]:
+    return list(range(start, end + 1))
+
+
+def chunk_token_ids(token_ids: List[int], chunk_size: int) -> List[List[int]]:
+    out = []
+    for i in range(0, len(token_ids), chunk_size):
+        out.append(token_ids[i : i + chunk_size])
+    return out
+
+
+def filter_revealed(minter: MangoTangoMinter, token_ids: List[int]) -> List[int]:
+    return [tid for tid in token_ids if tid in minter._metadata_store and minter._metadata_store[tid].revealed]
+
+
+def filter_unrevealed(minter: MangoTangoMinter, token_ids: List[int]) -> List[int]:
+    return [tid for tid in token_ids if tid in minter._metadata_store and not minter._metadata_store[tid].revealed]
+
+
+# ---------------------------------------------------------------------------
+# Price and royalty display helpers
+# ---------------------------------------------------------------------------
+
+def format_price_ether(wei: int) -> str:
+    return f"{wei / 1e18:.6f} ETH"
+
+
+def royalty_per_sale_ether(sale_ether: float) -> float:
+    wei = int(sale_ether * 1e18)
+    return compute_royalty_amount(wei, MANGO_TANGO_ROYALTY_BPS) / 1e18
