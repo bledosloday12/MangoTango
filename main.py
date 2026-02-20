@@ -1073,3 +1073,33 @@ def get_all_constants() -> Dict[str, Any]:
         "MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET": MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET,
         "MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET": MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET,
         "MANGO_TANGO_REVEAL_DELAY_SEC": MANGO_TANGO_REVEAL_DELAY_SEC,
+        "MINTER_ADDRESS": MINTER_ADDRESS,
+        "TREASURY_ADDRESS": TREASURY_ADDRESS,
+        "ROYALTY_RECIPIENT_ADDRESS": ROYALTY_RECIPIENT_ADDRESS,
+        "COLLECTION_OWNER_ADDRESS": COLLECTION_OWNER_ADDRESS,
+        "REVEAL_ORACLE_ADDRESS": REVEAL_ORACLE_ADDRESS,
+        "MANGO_TANGO_NAME": MANGO_TANGO_NAME,
+        "MANGO_TANGO_SYMBOL": MANGO_TANGO_SYMBOL,
+        "MANGO_TANGO_COLLECTION_URI": MANGO_TANGO_COLLECTION_URI,
+    }
+
+
+# ---------------------------------------------------------------------------
+# CLI / demo
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    m = MangoTangoMinter()
+    m.add_to_allowlist([MINTER_ADDRESS, TREASURY_ADDRESS])
+    print("Phase:", m.get_phase())
+    print("Mint price:", m.get_mint_price_wei())
+    ids = m.mint(MINTER_ADDRESS, 2, MANGO_TANGO_MINT_PRICE_WEI * 2)
+    print("Minted:", ids)
+    print("Total supply:", m.get_total_supply())
+    print("Balance:", m.balance_of(MINTER_ADDRESS))
+    meta = m.get_metadata(ids[0])
+    print("Metadata name:", meta.name)
+
+
+if __name__ == "__main__":
+    main()
