@@ -600,3 +600,46 @@ MANGO_TANGO_BACKGROUND_EFFECTS = [
     "None", "Bokeh", "Gradient", "Pattern", "Stars", "Leaves", "Waves",
 ]
 
+MANGO_TANGO_BORDER_STYLES = [
+    "None", "Gold", "Silver", "Bronze", "Rainbow", "Matte",
+]
+
+MANGO_TANGO_GENERATION_NAMES = [
+    "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta",
+]
+
+MANGO_TANGO_SEASON_IDS = [1, 2, 3, 4, 5, 6]
+
+MANGO_TANGO_SPECIAL_EDITION_FLAGS = [False, False, False, True, False]
+
+MANGO_TANGO_ANIMATION_URIS = [
+    "ipfs://QmAnim1/", "ipfs://QmAnim2/", "ipfs://QmAnim3/",
+]
+
+
+def get_hat_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[18:34], MANGO_TANGO_HAT_STYLES)
+
+
+def get_eyes_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[20:36], MANGO_TANGO_EYE_STYLES)
+
+
+def get_mouth_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[22:38], MANGO_TANGO_MOUTH_STYLES)
+
+
+def get_background_effect_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[24:40], MANGO_TANGO_BACKGROUND_EFFECTS)
+
+
+def get_border_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[26:42], MANGO_TANGO_BORDER_STYLES)
+
+
+def generate_extended_attributes(token_id: int) -> List[Dict[str, Any]]:
