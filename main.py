@@ -686,3 +686,46 @@ def parse_ether_to_wei(ether_str: str) -> int:
         return 0
 
 
+# ---------------------------------------------------------------------------
+# Validation and sanitization
+# ---------------------------------------------------------------------------
+
+def sanitize_address(addr: str) -> str:
+    s = addr.strip()
+    if len(s) == 42 and s.startswith("0x"):
+        return s[:2] + s[2:].lower()
+    return s
+
+
+def validate_quantity(quantity: int, phase: MangoTangoPhase) -> Tuple[bool, Optional[str]]:
+    if quantity <= 0:
+        return False, "Quantity must be positive"
+    max_per = MANGO_TANGO_ALLOWLIST_PHASE_MAX_PER_WALLET if phase == MangoTangoPhase.ALLOWLIST else MANGO_TANGO_PUBLIC_PHASE_MAX_PER_WALLET
+    if quantity > max_per:
+        return False, f"Max {max_per} per wallet in this phase"
+    return True, None
+
+
+def validate_mint_params(to_address: str, quantity: int, value_wei: int, minter: MangoTangoMinter) -> Tuple[bool, Optional[str]]:
+    if not validate_eth_address(to_address):
+        return False, "Invalid address"
+    ok, err = validate_quantity(quantity, minter.get_phase())
+    if not ok:
+        return False, err
+    required = minter.get_mint_price_wei() * quantity
+    if value_wei < required:
+        return False, "Insufficient value"
+    return minter.can_mint(to_address, quantity, value_wei)
+
+
+# ---------------------------------------------------------------------------
+# Export for EVM / ABI-like interface
+# ---------------------------------------------------------------------------
+
+def abi_like_mint(minter: MangoTangoMinter, to: str, quantity: int, value_wei: int) -> Dict[str, Any]:
+    try:
+        ids = minter.mint(to, quantity, value_wei)
+        return {"success": True, "tokenIds": ids, "error": None}
+    except Exception as e:
+        return {"success": False, "tokenIds": [], "error": str(e)}
+
