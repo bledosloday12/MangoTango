@@ -815,3 +815,46 @@ def get_fruit_accent_for_token(token_id: int) -> str:
     h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
     return _pick_trait_from_hash(h[34:50], MANGO_TANGO_FRUIT_ACCENTS)
 
+
+def get_dance_style_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[36:52], MANGO_TANGO_DANCE_STYLES)
+
+
+def get_music_genre_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[38:54], MANGO_TANGO_MUSIC_GENRES)
+
+
+def get_island_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[40:56], MANGO_TANGO_ISLAND_NAMES)
+
+
+def get_palette_for_token(token_id: int) -> str:
+    h = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    return _pick_trait_from_hash(h[42:58], MANGO_TANGO_PALETTE_NAMES)
+
+
+def build_full_extended_metadata(token_id: int) -> Dict[str, Any]:
+    attrs = generate_extended_attributes(token_id)
+    attrs.append({"trait_type": "Weather", "value": get_weather_for_token(token_id)})
+    attrs.append({"trait_type": "Fruit Accent", "value": get_fruit_accent_for_token(token_id)})
+    attrs.append({"trait_type": "Dance Style", "value": get_dance_style_for_token(token_id)})
+    attrs.append({"trait_type": "Music Genre", "value": get_music_genre_for_token(token_id)})
+    attrs.append({"trait_type": "Island", "value": get_island_for_token(token_id)})
+    attrs.append({"trait_type": "Palette", "value": get_palette_for_token(token_id)})
+    return {
+        "token_id": token_id,
+        "name": f"{MANGO_TANGO_NAME} #{token_id}",
+        "description": f"Extended metadata for MangoTango #{token_id}.",
+        "image": f"{MANGO_TANGO_COLLECTION_URI}{token_id}.png",
+        "attributes": attrs,
+        "animation_url": MANGO_TANGO_ANIMATION_URIS[token_id % len(MANGO_TANGO_ANIMATION_URIS)] + f"{token_id}.mp4" if token_id % 3 == 0 else None,
+        "external_url": token_uri_path(token_id),
+    }
+
+
+def collection_info() -> Dict[str, Any]:
+    return {
+        "name": MANGO_TANGO_NAME,
