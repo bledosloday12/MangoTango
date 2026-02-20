@@ -643,3 +643,46 @@ def get_border_for_token(token_id: int) -> str:
 
 
 def generate_extended_attributes(token_id: int) -> List[Dict[str, Any]]:
+    base = generate_metadata_attributes(token_id, True)
+    base.append({"trait_type": "Hat", "value": get_hat_for_token(token_id)})
+    base.append({"trait_type": "Eyes", "value": get_eyes_for_token(token_id)})
+    base.append({"trait_type": "Mouth", "value": get_mouth_for_token(token_id)})
+    base.append({"trait_type": "Background Effect", "value": get_background_effect_for_token(token_id)})
+    base.append({"trait_type": "Border", "value": get_border_for_token(token_id)})
+    seed = _hash_seed_for_token(MANGO_TANGO_COLLECTION_SEED, token_id)
+    base.append({"trait_type": "Generation", "value": _pick_trait_from_hash(seed[28:44], MANGO_TANGO_GENERATION_NAMES)})
+    base.append({"trait_type": "Season ID", "value": _pick_trait_from_hash(seed[30:46], [str(s) for s in MANGO_TANGO_SEASON_IDS])})
+    return base
+
+
+# ---------------------------------------------------------------------------
+# Supply and stats helpers
+# ---------------------------------------------------------------------------
+
+def remaining_supply(minter: MangoTangoMinter) -> int:
+    return minter.get_max_supply() - minter.get_total_supply()
+
+
+def is_sold_out(minter: MangoTangoMinter) -> bool:
+    return minter.get_phase() == MangoTangoPhase.SOLD_OUT
+
+
+def treasury_balance_estimate(minter: MangoTangoMinter) -> int:
+    return minter.get_total_supply() * MANGO_TANGO_MINT_PRICE_WEI
+
+
+def royalty_estimate_per_token() -> int:
+    return compute_royalty_amount(MANGO_TANGO_MINT_PRICE_WEI, MANGO_TANGO_ROYALTY_BPS)
+
+
+def format_wei_to_ether(wei: int) -> str:
+    return f"{wei / 1e18:.4f}"
+
+
+def parse_ether_to_wei(ether_str: str) -> int:
+    try:
+        return int(float(ether_str) * 1e18)
+    except (ValueError, TypeError):
+        return 0
+
+
