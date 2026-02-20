@@ -471,3 +471,46 @@ def batch_metadata(minter: MangoTangoMinter, token_ids: List[int]) -> List[Token
     return result
 
 
+def total_royalty_at_price(minter: MangoTangoMinter, sale_price_wei: int) -> int:
+    return compute_royalty_amount(sale_price_wei, minter.get_royalty_info().bps)
+
+
+def mint_simulation(minter: MangoTangoMinter, address: str, quantity: int) -> Dict[str, Any]:
+    ok, err = minter.can_mint(address, quantity, minter.get_mint_price_wei() * quantity)
+    return {
+        "canMint": ok,
+        "error": err,
+        "requiredWei": minter.get_mint_price_wei() * quantity,
+        "currentBalance": minter.balance_of(address),
+        "phase": minter.get_phase().name,
+        "remainingSupply": minter.get_max_supply() - minter.get_total_supply(),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Allowlist manager (batch and persistence helpers)
+# ---------------------------------------------------------------------------
+
+class AllowlistManager:
+    def __init__(self, minter: MangoTangoMinter) -> None:
+        self._minter = minter
+
+    def add_batch(self, addresses: List[str]) -> int:
+        valid = [a for a in addresses if validate_eth_address(a.strip())]
+        self._minter.add_to_allowlist(valid)
+        return len(valid)
+
+    def remove_batch(self, addresses: List[str]) -> int:
+        count = 0
+        for a in addresses:
+            if self._minter.is_on_allowlist(a):
+                self._minter.remove_from_allowlist(a)
+                count += 1
+        return count
+
+    def export_addresses(self) -> List[str]:
+        return list(self._minter._allowlist)
+
+    def count(self) -> int:
+        return self._minter.get_allowlist_size()
+
