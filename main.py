@@ -514,3 +514,46 @@ class AllowlistManager:
     def count(self) -> int:
         return self._minter.get_allowlist_size()
 
+
+# ---------------------------------------------------------------------------
+# Reveal scheduler (time-based reveal checks)
+# ---------------------------------------------------------------------------
+
+class RevealScheduler:
+    def __init__(self, minter: MangoTangoMinter) -> None:
+        self._minter = minter
+
+    def is_reveal_ready(self, token_id: int) -> bool:
+        if token_id not in self._minter._reveal_ready_at:
+            return False
+        return time.time() >= self._minter._reveal_ready_at[token_id]
+
+    def seconds_until_reveal(self, token_id: int) -> float:
+        if token_id not in self._minter._reveal_ready_at:
+            return 0.0
+        t = self._minter._reveal_ready_at[token_id] - time.time()
+        return max(0.0, t)
+
+    def reveal_all_ready(self) -> List[int]:
+        revealed = []
+        for tid in list(self._minter._metadata_store.keys()):
+            if self.is_reveal_ready(tid) and not self._minter.get_metadata(tid).revealed:
+                try:
+                    self._minter.reveal(tid)
+                    revealed.append(tid)
+                except MangoTangoRevealNotReadyError:
+                    pass
+        return revealed
+
+
+# ---------------------------------------------------------------------------
+# Metadata builder (extended attributes and JSON export)
+# ---------------------------------------------------------------------------
+
+class MetadataBuilder:
+    @staticmethod
+    def full_metadata_json(token_id: int, revealed: bool) -> str:
+        meta = build_token_metadata(token_id, revealed)
+        return meta.to_json()
+
+    @staticmethod
